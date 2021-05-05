@@ -11,13 +11,15 @@ import twitter4j.api.TrendsResources;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TwitterService {
 
     static final Integer NUM_TWEETS_FOR_PERSIST = 15000;
     static final String LANGUAGE_AVAILABLES_TWEET_FOR_PERSIST = "en|es|it";
-
+    static final Integer LIMIT_HASHTAG = 10;
     @Autowired
     TwitterInformationRepository twitterInformationRepository;
 
@@ -57,11 +59,15 @@ public class TwitterService {
 
     }
 
-    public void validateTwitterInformation(Long id) {
-        TwitterInformation entity = this.twitterInformationRepository.findById(id).get();
-
-        entity.setValidation(true);
-        this.twitterInformationRepository.save(entity);
+    public TwitterInformation validateTwitterInformation(Long id) {
+        Optional<TwitterInformation> entity = this.twitterInformationRepository.findById(id);
+        TwitterInformation result = null;
+        if(!entity.isEmpty()){
+            result = entity.get();
+            result.setValidation(true);
+            this.twitterInformationRepository.save(result);
+        }
+        return result;
     }
 
     public List<TwitterInformation> getTwitterInformationByUser(String user) {
@@ -69,9 +75,9 @@ public class TwitterService {
 
     }
 
-    public List<Trends> getTwitterByHashtag() throws TwitterException {
+    public List<Trend> getTwitterByHashtag() throws TwitterException {
         Twitter twitter = TwitterFactory.getSingleton();
         TrendsResources result = twitter.trends();
-        return Arrays.asList(result.getPlaceTrends(1));
+        return Arrays.stream(result.getPlaceTrends(1).getTrends()).collect(Collectors.toList()).subList(0,LIMIT_HASHTAG);
     }
 }

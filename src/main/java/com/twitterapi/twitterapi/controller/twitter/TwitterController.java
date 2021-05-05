@@ -9,10 +9,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 import twitter4j.*;
 
-import java.net.URI;
 import java.util.List;
 
 
@@ -33,11 +32,12 @@ public class TwitterController {
     }
 
     @RequestMapping("markTweet/{id}")
-    public String markTweet(@PathVariable Long id) throws TwitterException {
-       this.twitterService.validateTwitterInformation(id);
+    public ResponseEntity<JSONResponse> markTweet(@PathVariable Long id) throws TwitterException {
+        TwitterInformation entity = this.twitterService.validateTwitterInformation(id);
+        JSONResponse response = new JSONResponse(200,"Ok",entity);
 
-
-        return "Hello !!";
+        return ResponseEntity.ok()
+                .body(response);
     }
 
     @RequestMapping("checkTweetsByUser")
@@ -52,8 +52,8 @@ public class TwitterController {
     }
 
     @RequestMapping("checkHashtag")
-    public ResponseEntity<JSONResponse> checkHashtag(@RequestParam(value="hashtag", defaultValue="Test") String hashtag) throws TwitterException {
-        List<Trends> result = this.twitterService.getTwitterByHashtag();
+    public ResponseEntity<JSONResponse> checkHashtag() throws TwitterException {
+        List<Trend> result = this.twitterService.getTwitterByHashtag();
 
         JSONResponse response = new JSONResponse(200,"Ok",result);
 
